@@ -42,8 +42,7 @@ private:
 
 private:
 	// Used to store the network configuration
-	std::string ip, port;
-	std::vector<char> addrLen;
+	std::string ip, port, addrLen;
 	// File Descriptors for the main socket, and accepted connections
 	int nfd, sfd, err;
 	// Storage for the address structure to connect with

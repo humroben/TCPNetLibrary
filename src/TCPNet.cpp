@@ -3,6 +3,7 @@
 #include <arpa/inet.h>
 
 #include <iostream>
+#include <sstream>
 #include <string.h>
 #include <unistd.h>
 
@@ -96,14 +97,18 @@ int TCPNet::Accept(){
 
 	// Start accepting connections, storing information about client connection
 	nfd = accept(sfd, (struct sockaddr*)&clientAddr, &addrSize);
-	addrLen.assign(INET6_ADDRSTRLEN,0);
+	std::stringstream ss;
 
 	// Pull Client IP address from the address structure, taking care with IPv4/6
 	if (((struct sockaddr*)&clientAddr)->sa_family == AF_INET) {
-		inet_ntop(clientAddr.ss_family, &(((struct sockaddr_in*)&clientAddr)->sin_addr), &addrLen[0], sizeof(addrLen));
+		std::vector<char> addr(INET_ADDRSTRLEN,0);
+		ss << inet_ntop(clientAddr.ss_family, &(((struct sockaddr_in*)&clientAddr)->sin_addr), &addr[0], sizeof(addr));
 	} else {
-		inet_ntop(clientAddr.ss_family, &(((struct sockaddr_in6*)&clientAddr)->sin6_addr), &addrLen[0], sizeof(addrLen));
+		std::vector<char> addr(INET6_ADDRSTRLEN,0);
+		ss << inet_ntop(clientAddr.ss_family, &(((struct sockaddr_in6*)&clientAddr)->sin6_addr), &addr[0], sizeof(addr));
 	}
+
+	ss >> addrLen;
 
 	// Return FD for client connection (error state is included)
 	return nfd;
@@ -112,11 +117,12 @@ int TCPNet::Accept(){
 int TCPNet::RecvRequest(std::string *_request) {
 	std::vector<char> buffer(1024,0);
 
+	int bytes = 0;
 	// Wait for the client to send data before continuing
-	if ((err = recv(nfd, &buffer[0], 1024, 0)) <= 0)
-		return err;
+	if ((bytes = recv(nfd, &buffer[0], 1024, 0)) <= 0)
+		return bytes;
 
-	_request->assign(buffer.cbegin(), buffer.cend());
+	_request->assign(buffer.cbegin(), buffer.cbegin() + bytes);
 
 	/* Due to the number of elements in the vector for the buffer,
 	 * all the empty elements at the end of the buffer needs to be
@@ -126,7 +132,7 @@ int TCPNet::RecvRequest(std::string *_request) {
 	if (trim != std::string::npos)
 		_request->erase(_request->begin() + trim, _request->end());
 
-	return err;
+	return bytes;
 }
 
 // Send a give response to the connected client

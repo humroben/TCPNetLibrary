@@ -5,8 +5,6 @@
 int main() {
 	TCPNet::TCPNet net;
 
-
-
 	std::cout << "Configuring Network" << std::endl;
 	net.NetConfig();
 	std::cout << "Starting Network" << std::endl;
@@ -26,8 +24,9 @@ int main() {
 				break;
 			} else {
 				std::cout << request << std::endl;
-				if ((err = net.SendResponse("Connected!\n")) == -1)
+				if ((err = net.SendResponse("Connected!\n")) == -1){
 					break;
+				}
 			}
 		}
 	}
