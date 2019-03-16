@@ -124,6 +124,14 @@ int TCPNet::RecvRequest(std::string *_request) {
 
 	_request->assign(buffer.cbegin(), buffer.cbegin() + bytes);
 
+	// Checking for use of Ctrl+C
+	// first 4 bytes are -1, last byte is 6 ([ACK])
+	if (((int)_request->at(0) == -1) && _request->back() == 6){
+		// terminate connection with client
+		close(nfd);
+		return 0;
+	}
+
 	/* Due to the number of elements in the vector for the buffer,
 	 * all the empty elements at the end of the buffer needs to be
 	 * stripped out.
