@@ -158,11 +158,10 @@ std::string TCPNet::GetClientAddr() {
 
 // Applies the configuration for the network from user defined values
 void TCPNet::SetConfig() {
-	auto search = ip;
 
-	if (search.find(":") != std::string::npos) {
+	if (ip.find(":") != std::string::npos) {
 		settings.ai_family = AF_INET6;
-	} else if (search.find(".") != std::string::npos) {
+	} else if (ip.find(".") != std::string::npos) {
 		settings.ai_family = AF_INET;
 	} else {
 		settings.ai_family = AF_UNSPEC;
