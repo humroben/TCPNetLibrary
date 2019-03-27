@@ -12,8 +12,12 @@ namespace TCPNet {
 
 // Initialising all private variables (objects)
 TCPNet::TCPNet() : nfd(0), sfd(0), settings{0}, tcpSock{0} {}
-TCPNet::TCPNet(const TCPNet &c_net): nfd(0), sfd(0), settings(c_net.settings), tcpSock(c_net.tcpSock) {}
+
+TCPNet::TCPNet(const TCPNet &c_net): ip(c_net.ip), port(c_net.port), nfd(0), sfd(0), settings(c_net.settings), tcpSock(c_net.tcpSock) {}
+
 TCPNet::TCPNet(TCPNet&& m_net) :
+	ip(std::move(m_net.ip)),
+	port(std::move(m_net.port)),
 	nfd(std::exchange(m_net.nfd, 0)),
 	sfd(std::exchange(m_net.sfd, 0)),
 	settings(std::move(m_net.settings)),
@@ -23,7 +27,6 @@ TCPNet::TCPNet(TCPNet&& m_net) :
 // Cleanly destroy this object, by first closing the socket, then freeing up the address information
 TCPNet::~TCPNet() {
 	close(sfd);
-	freeaddrinfo(tcpSock);
 }
 
 /* Configure the IP and port for the TCP Library to bind to.
@@ -53,13 +56,11 @@ int TCPNet::Start(){
 	// using the settings, create address structure, store in &result, and check for success
 	if (ip.empty()){
 		if ((err = getaddrinfo(nullptr, port.c_str(), &settings, &result)) != 0) {
-			std::cerr << "getaddrinfo: " << gai_strerror(err) << std::endl;
 			freeaddrinfo(result);
 			return err;
 		}
 	} else {
 		if ((err = getaddrinfo(ip.c_str(), port.c_str(), &settings, &result)) != 0) {
-			std::cerr << "getaddrinfo: " << gai_strerror(err) << std::endl;
 			freeaddrinfo(result);
 			return err;
 		}
