@@ -12,13 +12,26 @@ namespace TCPNet {
 
 class TCPNet {
 public:
+	// Default constructor
 	TCPNet();
+	// Copy Constructor
+	TCPNet(const TCPNet &c_net);
+	// Move Constructor
+	TCPNet(TCPNet&& m_net);
 
-	// configure defaults for net configuration
-	void NetConfig();
-	// Configures port/IP address depending on structure
+	~TCPNet();
+
+	/* Configured to Port or IP for the socket
+	 *
+	 * @param _net		- String of port or IP address
+	 */
 	void NetConfig(std::string _net);
-	// Configures port and IP with user definitions
+
+	/* Configure the Port and IP address for the socket
+	 *
+	 * @param _port		- String with port
+	 * @param _ip_addr	- String with IP address
+	 */
 	void NetConfig(std::string _port, std::string _ip_addr);
 
 	// Start Listening on the given configuration
@@ -31,10 +44,21 @@ public:
 
 	// returns a string of the client's address
 	std::string GetClientAddr();
+	std::string GetGaiError(int err);
 
-	// Handle the transmission and reception of messages
-	int SendResponse(std::string _message);
-	int RecvRequest(std::string *_request);
+	/* Send string data to client socket
+	 *
+	 * @param _message  - Buffer containing data
+	 * @return			- Number of bytes sent. Negative = error.
+	 */
+	int SendResponse(std::string _message) const;
+
+	/* Receives string from client socket
+	 *
+	 * @param _request  - Buffer to store received data.
+	 * @return 		    - Number of bytes received. 0 = disconnect, negative = error.
+	 */
+	int RecvRequest(std::string *_request) const;
 
 private:
 	// Set the configuration specified in NetConfig()
@@ -44,9 +68,9 @@ private:
 	// Used to store the network configuration
 	std::string ip, port, addrLen;
 	// File Descriptors for the main socket, and accepted connections
-	int nfd, sfd, err;
+	int nfd, sfd;
 	// Storage for the address structure to connect with
-	struct addrinfo settings;
+	struct addrinfo settings, *tcpSock;
 };
 
 }

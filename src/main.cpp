@@ -6,9 +6,15 @@ int main() {
 	TCPNet::TCPNet net;
 
 	std::cout << "Configuring Network" << std::endl;
-	net.NetConfig();
+	net.NetConfig("8080","127.0.0.1");
 	std::cout << "Starting Network" << std::endl;
-	net.Start();
+
+	int err;
+	if ((err = net.Start()) > 0) { // Error with getaddrinfo
+		net.GetGaiError(err);
+	} else if (err == -1) { // error with bind or listen
+		return errno;
+	}
 
 	while (true) {
 		if ((net.Accept()) == -1)
@@ -23,6 +29,15 @@ int main() {
 			if ((err = net.RecvRequest(&request)) <= 0) {
 				break;
 			} else {
+				if (((int)request.at(0) == -1) && request.back() == 6){
+					// Close client connection goes here
+					break;
+				}
+
+				auto trim = request.find("\r");
+				if (trim != std::string::npos)
+					request.erase(request.begin() + trim, request.end());
+
 				std::cout << request << std::endl;
 				if ((err = net.SendResponse("Connected!\n")) == -1){
 					break;
