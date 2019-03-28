@@ -21,7 +21,7 @@ public:
 
 	~TCPNet();
 
-	/* Configured to Port or IP for the socket
+	/* Configure Port or IP for the TCP socket
 	 *
 	 * @param _net		- String of port or IP address
 	 */
@@ -34,29 +34,49 @@ public:
 	 */
 	void NetConfig(std::string _port, std::string _ip_addr);
 
-	// Start Listening on the given configuration
+	/* Start listening on a TCP Socket
+	 *
+	 * @return			- Error returned from startup
+	 * 					- Zero on success
+	 * 					- Positive for GAI error
+	 * 					- Negative for error, errno is set
+	 */
 	int Start();
-	// Stop Listening
-	int Stop();
 
-	// Start accepting connections.
+	/* Accept next client connection
+	 *
+	 * @return			- Positive for valid file descriptor
+	 * 					- Negative for error, errno is set
+	 */
 	int Accept();
 
-	// returns a string of the client's address
+	/* Returns IP address of client connection
+	 *
+	 * @return			- String containing Client IP (IPv4 or IPv6)
+	 */
 	std::string GetClientAddr();
+
+	/* Converts GAI error to error string
+	 *
+	 * @param err		- Error returned from TCPNet::Start()
+	 * @return			- String related to given error code
+	 */
 	std::string GetGaiError(int err);
 
 	/* Send string data to client socket
 	 *
 	 * @param _message  - Buffer containing data
-	 * @return			- Number of bytes sent. Negative = error.
+	 * @return			- Positive/zero Number of bytes sent.
+	 * 					- Negative for error, errno is set
 	 */
 	int SendResponse(std::string _message) const;
 
 	/* Receives string from client socket
 	 *
 	 * @param _request  - Buffer to store received data.
-	 * @return 		    - Number of bytes received. 0 = disconnect, negative = error.
+	 * @return 		    - Positive, number of bytes received.
+	 * 					- Zero, Client disconnection.
+	 * 					- Negative for error, errno is set
 	 */
 	int RecvRequest(std::string *_request) const;
 

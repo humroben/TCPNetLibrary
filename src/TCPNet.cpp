@@ -10,11 +10,11 @@
 
 namespace TCPNet {
 
-// Initialising all private variables (objects)
+// Default Constructor (object initialisation)
 TCPNet::TCPNet() : nfd(0), sfd(0), settings{0}, tcpSock{0} {}
-
+// Copy Constructor
 TCPNet::TCPNet(const TCPNet &c_net): ip(c_net.ip), port(c_net.port), nfd(0), sfd(0), settings(c_net.settings), tcpSock(c_net.tcpSock) {}
-
+// Move Constructor
 TCPNet::TCPNet(TCPNet&& m_net) :
 	ip(std::move(m_net.ip)),
 	port(std::move(m_net.port)),
@@ -24,24 +24,21 @@ TCPNet::TCPNet(TCPNet&& m_net) :
 	tcpSock(std::move(m_net.tcpSock))
 {}
 
-// Cleanly destroy this object, by first closing the socket, then freeing up the address information
+// Close client connection before destroying object
 TCPNet::~TCPNet() {
 	close(sfd);
 }
 
-/* Configure the IP and port for the TCP Library to bind to.
- *
- * Overloaded to allow a single argument of either custom port or IP address
- * and the ability to configure both.
- */
+// Configure Port or IP for the TCP socket
 void TCPNet::NetConfig(std::string _net) {
-	if (_net.find(":") != std::string::npos || _net.find(".") != std::string::npos) {
+	if (_net.find(':') != std::string::npos || _net.find('.') != std::string::npos) {
 		ip = std::move(_net);
 	} else {
 		port = std::move(_net);
 		SetConfig();
 	}
 }
+// Configure Port and IP for the TCP socket
 void TCPNet::NetConfig(std::string _port, std::string _ip_addr) {
 	port = std::move(_port);
 	ip = std::move(_ip_addr);
@@ -49,6 +46,7 @@ void TCPNet::NetConfig(std::string _port, std::string _ip_addr) {
 	SetConfig();
 }
 
+// Start listening on a TCP Socket
 int TCPNet::Start(){
 	struct addrinfo *result;
 	int err = 0;
@@ -88,7 +86,7 @@ int TCPNet::Start(){
 	return err;
 }
 
-// Initiate accepting of TCP connections
+// Accept next client connections, return file descriptor
 int TCPNet::Accept(){
 	struct sockaddr_storage clientAddr;
 	socklen_t addrSize;
@@ -112,6 +110,7 @@ int TCPNet::Accept(){
 	return nfd;
 }
 
+// Receives string from client socket
 int TCPNet::RecvRequest(std::string *_request) const{
 	std::vector<char> buffer(1024,0);
 	int bytes = 0;
@@ -130,16 +129,17 @@ int TCPNet::SendResponse(std::string _message) const{
 	return send(nfd, _message.c_str(), len, 0);
 }
 
-// Returns the Client's IP address
+// Returns IP address of client connection
 std::string TCPNet::GetClientAddr() {
 	return std::string(addrLen.cbegin(), addrLen.cend());
 }
 
+// Converts GAI error to error string
 std::string TCPNet::GetGaiError(int err) {
 	return gai_strerror(err);
 }
 
-// Applies the configuration for the network from user defined values
+// Set the configuration specified in NetConfig()
 void TCPNet::SetConfig() {
 	if (ip.find(':') != std::string::npos) {
 		settings.ai_family = AF_INET6;
