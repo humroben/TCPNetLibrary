@@ -135,7 +135,7 @@ std::string TCPNet::GetClientAddr() {
 }
 
 // Converts GAI error to error string
-std::string TCPNet::GetGaiError(int err) {
+std::string TCPNet::GetGaiError(int err) const{
 	return gai_strerror(err);
 }
 
