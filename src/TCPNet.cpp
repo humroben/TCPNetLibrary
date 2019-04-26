@@ -11,22 +11,23 @@
 namespace TCPNet {
 
 // Default Constructor (object initialisation)
-TCPNet::TCPNet() : nfd(0), sfd(0), settings{0}, tcpSock{0} {}
+TCPNet::TCPNet() : nfd(-1), sfd(-1), settings{0}, tcpSock{0} {}
 // Copy Constructor
-TCPNet::TCPNet(const TCPNet &c_net): ip(c_net.ip), port(c_net.port), nfd(0), sfd(0), settings(c_net.settings), tcpSock(c_net.tcpSock) {}
+TCPNet::TCPNet(const TCPNet &c_net): ip(c_net.ip), port(c_net.port), nfd(-1), sfd(-1), settings(c_net.settings), tcpSock(c_net.tcpSock) {}
 // Move Constructor
 TCPNet::TCPNet(TCPNet&& m_net) :
 	ip(std::move(m_net.ip)),
 	port(std::move(m_net.port)),
-	nfd(std::exchange(m_net.nfd, 0)),
-	sfd(std::exchange(m_net.sfd, 0)),
+	nfd(std::exchange(m_net.nfd, -1)),
+	sfd(std::exchange(m_net.sfd, -1)),
 	settings(std::move(m_net.settings)),
 	tcpSock(std::move(m_net.tcpSock))
 {}
 
 // Close client connection before destroying object
 TCPNet::~TCPNet() {
-	close(sfd);
+	if (sfd != -1)
+		close(sfd);
 }
 
 // Configure Port or IP for the TCP socket
@@ -124,9 +125,8 @@ int TCPNet::RecvRequest(std::string *_request) const{
 }
 
 // Send a give response to the connected client
-int TCPNet::SendResponse(std::string _message) const{
-	int len = strlen(_message.c_str());
-	return send(nfd, _message.c_str(), len, 0);
+int TCPNet::SendResponse(std::string _message){
+	return send(nfd, _message.c_str(), strlen(_message.c_str()), 0);
 }
 
 // Returns IP address of client connection
@@ -135,7 +135,7 @@ std::string TCPNet::GetClientAddr() {
 }
 
 // Converts GAI error to error string
-std::string TCPNet::GetGaiError(int err) const{
+std::string TCPNet::GetGaiError(int err){
 	return gai_strerror(err);
 }
 

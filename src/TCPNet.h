@@ -61,7 +61,7 @@ public:
 	 * @param err		- Error returned from TCPNet::Start()
 	 * @return			- String related to given error code
 	 */
-	std::string GetGaiError(int err) const;
+	std::string GetGaiError(int err);
 
 	/* Send string data to client socket
 	 *
@@ -69,7 +69,7 @@ public:
 	 * @return			- Positive/zero Number of bytes sent.
 	 * 					- Negative for error, errno is set
 	 */
-	int SendResponse(std::string _message) const;
+	int SendResponse(std::string _message);
 
 	/* Receives string from client socket
 	 *
