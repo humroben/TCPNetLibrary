@@ -70,6 +70,9 @@ int TCPNet::Start(){
 		sfd = socket(tcpSock->ai_family, tcpSock->ai_socktype, tcpSock->ai_protocol);
 		if (sfd == -1)
 			continue;
+		int opt = 1;
+		if (setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1)
+			continue;
 		if ((err = bind(sfd, tcpSock->ai_addr, tcpSock->ai_addrlen)) == -1)
 			continue;
 		break;
@@ -126,7 +129,8 @@ int TCPNet::RecvRequest(std::string *_request) const{
 
 // Send a give response to the connected client
 int TCPNet::SendResponse(std::string _message){
-	return send(nfd, _message.c_str(), strlen(_message.c_str()), 0);
+	int bytes = send(nfd, _message.c_str(), strlen(_message.c_str()), 0);
+	return bytes;
 }
 
 // Returns IP address of client connection

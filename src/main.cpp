@@ -70,24 +70,31 @@ int main() {
 						trim = request.find("\r");
 					}
 
-					// Stop the application if "stop" is sent
-					if (request.find("stop") != std::string::npos) {
-						online = false;
-						break;
+					for (std::vector<std::string>::iterator iter = reqLines.begin(); iter < reqLines.end(); iter++) {
+						std::cout << *iter << std::endl;
 					}
 
+					// Stop the application if "stop" is sent
+					//if (request.find("stop") != std::string::npos) {
+					//	online = false;
+					//	break;
+					//}
+
+					std::vector<std::string> resp;
+					resp.emplace_back("HTTP/1.1 200 OK\r\n");
+					resp.emplace_back("Content-Type: text/html\r\n");
+					resp.emplace_back("\r\n");
+					resp.emplace_back("Hello World!\r\n");
+					resp.emplace_back("\r\n");
+
 					if (reqLines.back().empty()) {
-						//std::string resp = "HTTP/1.1 200 OK\r\n";
-						//resp += "Server: TCPNet/0.1\r\n";
-						//resp += "Content-Type: text/html\r\n";
-						//resp += "Connection: close\r\n";
-						//resp += "Hello\r\n";
-
-						//std::cout << resp << std::endl;
-
-						std::cout << "responding" << std::endl;
-						if ((err = net.SendResponse("Connected!\r\n")) == -1) {
-							break;
+						std::cout << "Responding!" << std::endl;
+						for (std::vector<std::string>::iterator iter = resp.begin(); iter < resp.end(); iter++) {
+							std::cout << *iter << std::endl;
+							if ((err = net.SendResponse(*iter)) == -1) {
+							//if ((err = net.SendResponse("Connected!\r\n")) == -1) {
+								break;
+							}
 						}
 					}
 				}
