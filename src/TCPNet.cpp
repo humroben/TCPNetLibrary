@@ -135,17 +135,13 @@ int TCPNet::RecvRequest(std::string *_request, int size) const{
 // Receives File data from client socket
 int TCPNet::RecvRequest(char* fData, int size) const{
 	int bytes = 0;
-
-	char *buffer = new char[size];
 	while (size > bytes) {
 		int bytes_r = 0;
-		if ((bytes_r = recv(nfd, buffer + bytes, size - bytes, 0)) <= 0)
+		if ((bytes_r = recv(nfd, fData + bytes, size - bytes, 0)) <= 0)
 			return bytes;
 		else
 			bytes += bytes_r;
 	}
-
-	fData = buffer;
 
 	return bytes;
 }
