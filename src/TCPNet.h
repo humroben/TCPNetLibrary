@@ -74,12 +74,21 @@ public:
 	/* Receive string from client socket
 	 *
 	 * @param _request  - Buffer to store received data.
-	 * @param size		- Size of data expected. (default: 1024 bytes)
 	 * @return 		    - Positive, number of bytes received.
 	 * 					- Zero, Client disconnection.
 	 * 					- Negative for error, errno is set
 	 */
-	int RecvRequest(std::string *_request, int size = 1024) const;
+	int RecvRequest(std::string *_request) const;
+
+	/* Receive string from client socket
+	 *
+	 * @param _request  - Buffer to store received data.
+	 * @param size		- Size of data expected.
+	 * @return 		    - Positive, number of bytes received.
+	 * 					- Zero, Client disconnection.
+	 * 					- Negative for error, errno is set
+	 */
+	int RecvRequest(int size, std::string *_request) const;
 
 	/* Receive file from client socket
      *
@@ -89,7 +98,7 @@ public:
 	 * 					- Zero, Client disconnection.
 	 * 					- Negative for error, errno is set
 	 */
-	int RecvRequest(char *fData, int size = 1024) const;
+	int RecvRequest(int size, char *fData) const;
 
 private:
 	// Set the configuration specified in NetConfig()
