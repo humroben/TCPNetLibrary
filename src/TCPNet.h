@@ -71,14 +71,25 @@ public:
 	 */
 	int SendResponse(std::string _message);
 
-	/* Receives string from client socket
+	/* Receive string from client socket
 	 *
 	 * @param _request  - Buffer to store received data.
+	 * @param size		- Size of data expected. (default: 1024 bytes)
 	 * @return 		    - Positive, number of bytes received.
 	 * 					- Zero, Client disconnection.
 	 * 					- Negative for error, errno is set
 	 */
-	int RecvRequest(std::string *_request) const;
+	int RecvRequest(std::string *_request, int size = 1024) const;
+
+	/* Receive file from client socket
+     *
+	 * @param fData     - Buffer to store received data.
+	 * @param size		- Size of data expected. (default: 1024 bytes)
+	 * @return 		    - Positive, number of bytes received.
+	 * 					- Zero, Client disconnection.
+	 * 					- Negative for error, errno is set
+	 */
+	int RecvRequest(char *fData, int size = 1024) const;
 
 private:
 	// Set the configuration specified in NetConfig()

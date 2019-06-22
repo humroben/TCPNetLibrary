@@ -115,14 +115,37 @@ int TCPNet::Accept(){
 }
 
 // Receives string from client socket
-int TCPNet::RecvRequest(std::string *_request) const{
-	std::vector<char> buffer(1024,0);
+int TCPNet::RecvRequest(std::string *_request, int size) const{
 	int bytes = 0;
 
-	if ((bytes = recv(nfd, &buffer[0], 1024, 0)) <= 0)
-		return bytes;
+	char *buffer = new char[size];
+	while (size > bytes) {
+		int bytes_r = 0;
+		if ((bytes_r = recv(nfd, buffer + bytes, size - bytes, 0)) <= 0)
+			return bytes;
+		else
+			bytes += bytes_r;
+	}
 
-	_request->assign(buffer.cbegin(), buffer.cbegin() + bytes);
+	_request->assign(buffer);
+
+	return bytes;
+}
+
+// Receives File data from client socket
+int TCPNet::RecvRequest(char* fData, int size) const{
+	int bytes = 0;
+
+	char *buffer = new char[size];
+	while (size > bytes) {
+		int bytes_r = 0;
+		if ((bytes_r = recv(nfd, buffer + bytes, size - bytes, 0)) <= 0)
+			return bytes;
+		else
+			bytes += bytes_r;
+	}
+
+	fData = buffer;
 
 	return bytes;
 }
