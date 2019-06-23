@@ -3,3 +3,5 @@ Release
 .project
 .cproject
 .settings
+/Debug-Library/
+/Release-Library/
