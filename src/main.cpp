@@ -42,12 +42,15 @@ int main() {
 					<< std::endl;
 
 			while (true) {
-				int err = 0;
+				int bytes = 0;
+				char* req = new char[sizeof(int)];
 				std::string request;
 
-				if ((err = net.RecvRequest(&request)) <= 0) {
+				if ((bytes = net.RecvRequest(req)) <= 0) {
 					break;
 				} else {
+					std::cout << "Bytes Received: " << bytes << std::endl;
+					request.assign(req);
 					if (((int) request.at(0) == -1) && request.back() == 6) {
 						// Ctrl-C: Close client connection goes here
 						break;
@@ -84,13 +87,13 @@ int main() {
 					resp.emplace_back("HTTP/1.1 200 OK\r\n");
 					resp.emplace_back("Content-Type: text/html\r\n");
 					resp.emplace_back("\r\n");
-					resp.emplace_back("Hello World!\r\n");
+					resp.emplace_back("Hello World!");
 					resp.emplace_back("\r\n");
 
 					if (reqLines.back().empty()) {
 						std::cout << "Responding!" << std::endl;
 						for (std::vector<std::string>::iterator iter = resp.begin(); iter < resp.end(); iter++) {
-							std::cout << *iter << std::endl;
+							std::cout << *iter;
 							if ((err = net.SendResponse(*iter)) == -1) {
 							//if ((err = net.SendResponse("Connected!\r\n")) == -1) {
 								break;

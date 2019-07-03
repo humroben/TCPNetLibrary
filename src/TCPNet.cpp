@@ -13,7 +13,12 @@ namespace TCPNet {
 // Default Constructor (object initialisation)
 TCPNet::TCPNet() : nfd(-1), sfd(-1), settings{0}, tcpSock{0} {}
 // Copy Constructor
-TCPNet::TCPNet(const TCPNet &c_net): ip(c_net.ip), port(c_net.port), nfd(-1), sfd(-1), settings(c_net.settings), tcpSock(c_net.tcpSock) {}
+TCPNet::TCPNet(const TCPNet &c_net):
+		ip(c_net.ip), port(c_net.port),
+		nfd(-1), sfd(-1),
+		settings(c_net.settings),
+		tcpSock(c_net.tcpSock)
+{}
 // Move Constructor
 TCPNet::TCPNet(TCPNet&& m_net) :
 	ip(std::move(m_net.ip)),
@@ -93,8 +98,7 @@ int TCPNet::Start(){
 // Accept next client connections, return file descriptor
 int TCPNet::Accept(){
 	struct sockaddr_storage clientAddr;
-	socklen_t addrSize;
-	addrSize = sizeof(clientAddr);
+	socklen_t addrSize = sizeof(clientAddr);
 
 	// Start accepting connections, storing information about client connection
 	nfd = accept(sfd, (struct sockaddr*)&clientAddr, &addrSize);
@@ -102,11 +106,11 @@ int TCPNet::Accept(){
 
 	// Pull Client IP address from the address structure, taking care with IPv4/6
 	if (((struct sockaddr*)&clientAddr)->sa_family == AF_INET) {
-		std::vector<char> addr(INET_ADDRSTRLEN,0);
-		ss << inet_ntop(clientAddr.ss_family, &(((struct sockaddr_in*)&clientAddr)->sin_addr), &addr[0], sizeof(addr));
+		char *addr = new char[INET_ADDRSTRLEN];
+		ss << inet_ntop(clientAddr.ss_family, &(((struct sockaddr_in*)&clientAddr)->sin_addr), addr, INET_ADDRSTRLEN);
 	} else {
-		std::vector<char> addr(INET6_ADDRSTRLEN,0);
-		ss << inet_ntop(clientAddr.ss_family, &(((struct sockaddr_in6*)&clientAddr)->sin6_addr), &addr[0], sizeof(addr));
+		char *addr = new char[INET6_ADDRSTRLEN];
+		ss << inet_ntop(clientAddr.ss_family, &(((struct sockaddr_in6*)&clientAddr)->sin6_addr), addr, INET6_ADDRSTRLEN);
 	}
 
 	ss >> addrLen;
@@ -114,48 +118,29 @@ int TCPNet::Accept(){
 	return nfd;
 }
 
-int TCPNet::RecvRequest(std::string *_request) const{
-	int bytes = 0;
+// Receives data from a client socket. Using "char*" to include files
+int TCPNet::RecvRequest(char *_request) const{
+	int rbytes = 0, buffSize = 1024;
+	bool receive = true;
+	strcpy(_request, "");
 
-	char *buffer = new char[1024];
-	if ((bytes = recv(nfd, buffer, 1024, 0)) <= 0)
-		return bytes;
-
-	_request->assign(buffer);
-
-	return bytes;
-}
-
-// Receives string from client socket, expecting a given size
-int TCPNet::RecvRequest(int size, std::string *_request) const{
-	int bytes = 0;
-
-	char *buffer = new char[size];
-	while (size > bytes) {
-		int bytes_r = 0;
-		if ((bytes_r = recv(nfd, buffer + bytes, size - bytes, 0)) <= 0)
+	// We don't know how much data we're expecting, so only return
+	// once we receive data less than the buffer
+	while (receive) {
+		char *buffer = new char[buffSize];
+		int bytes = 0;
+		if ((bytes = recv(nfd, buffer, 1024, 0)) <= 0)
 			return bytes;
-		else
-			bytes += bytes_r;
+
+		rbytes += bytes;
+		strcat(_request, buffer);
+
+		if (bytes < buffSize) {
+			receive = false;
+		}
 	}
 
-	_request->assign(buffer);
-
-	return bytes;
-}
-
-// Receives File data from client socket, expecting a given size
-int TCPNet::RecvRequest(int size, char* fData) const{
-	int bytes = 0;
-	while (size > bytes) {
-		int bytes_r = 0;
-		if ((bytes_r = recv(nfd, fData + bytes, size - bytes, 0)) <= 0)
-			return bytes;
-		else
-			bytes += bytes_r;
-	}
-
-	return bytes;
+	return rbytes;
 }
 
 // Send a give response to the connected client
